@@ -16,6 +16,12 @@ export default function Home({ theme, setTheme }) {
   const [showNewRoomInput, setShowNewRoomInput] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // ... существующие useState
+  const [typingUsers, setTypingUsers] = useState([]); // Кто печатает прямо сейчас
+  
+  // ... существующие useRef
+  const typingTimeoutRef = useRef(null); // Таймер для остановки "печатает"
+
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -89,6 +95,32 @@ export default function Home({ theme, setTheme }) {
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  
+  // Обработка ввода текста (с задержкой, чтобы не спамить сервер)
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setText(newValue);
+
+    if (!socketRef.current || !newValue.trim()) {
+      // Если поле очистили, сразу снимаем статус "печатает"
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      socketRef.current?.emit('stopTyping', { roomId: currentRoom, username: user.username });
+      return;
+    }
+
+    // Отправляем "печатает"
+    socketRef.current.emit('typing', { roomId: currentRoom, username: user.username });
+
+    // Сбрасываем предыдущий таймер
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    // Устанавливаем новый таймер: если пользователь не печатает 2 секунды, снимаем статус
+    typingTimeoutRef.current = setTimeout(() => {
+      socketRef.current.emit('stopTyping', { roomId: currentRoom, username: user.username });
+    }, 2000);
+  };
+
+
   // Подключение к сокетам
   useEffect(() => {
     if (!user) return;
@@ -109,27 +141,83 @@ export default function Home({ theme, setTheme }) {
       setIsConnected(false);
     });
 
+    // --- НОВЫЕ СОБЫТИЯ ДЛЯ "ПЕЧАТАЕТ" ---
+    socket.on('userTyping', ({ username }) => {
+      setTypingUsers((prev) => {
+        if (!prev.includes(username)) {
+          return [...prev, username];
+        }
+        return prev;
+      });
+    });
+
+    socket.on('userStopTyping', ({ username }) => {
+      setTypingUsers((prev) => prev.filter((u) => u !== username));
+    });
+    // -------------------------------------
+
     socket.on('message', (msg) => {
       if (msg.roomId === currentRoom) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === msg.id)) return prev;
           const newMessages = [...prev, msg];
-
-          // Если это текущая комната — сразу отмечаем как прочитанное
           markRoomAsRead(currentRoom, msg.id);
-
           return newMessages;
         });
       } else {
-        // Если сообщение из другой комнаты — обновляем список комнат (счётчик непрочитанных)
         loadRooms();
       }
     });
 
     socket.on('error', (e) => console.error('socket error', e));
 
-    return () => socket.disconnect();
-  }, [user, currentRoom]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      // Очистка таймера при размонтировании
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      socket.disconnect();
+    };
+  }, [user, currentRoom]); 
+
+//   useEffect(() => {
+//     if (!user) return;
+
+//     const token = localStorage.getItem('token');
+//     const socket = io({
+//       path: '/socket.io',
+//       auth: { token },
+//     });
+//     socketRef.current = socket;
+
+//     socket.on('connect', () => {
+//       setIsConnected(true);
+//       socket.emit('join', currentRoom);
+//     });
+
+//     socket.on('disconnect', () => {
+//       setIsConnected(false);
+//     });
+
+//     socket.on('message', (msg) => {
+//       if (msg.roomId === currentRoom) {
+//         setMessages((prev) => {
+//           if (prev.some((m) => m.id === msg.id)) return prev;
+//           const newMessages = [...prev, msg];
+
+//           // Если это текущая комната — сразу отмечаем как прочитанное
+//           markRoomAsRead(currentRoom, msg.id);
+
+//           return newMessages;
+//         });
+//       } else {
+//         // Если сообщение из другой комнаты — обновляем список комнат (счётчик непрочитанных)
+//         loadRooms();
+//       }
+//     });
+
+//     socket.on('error', (e) => console.error('socket error', e));
+
+//     return () => socket.disconnect();
+//   }, [user, currentRoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Переключение комнаты
   const switchRoom = (roomId) => {
@@ -162,14 +250,29 @@ export default function Home({ theme, setTheme }) {
   };
 
   // Отправка сообщения
-  const send = () => {
+    const send = () => {
     if (!text.trim() || !socketRef.current) return;
+    
     socketRef.current.emit('sendMessage', {
       roomId: currentRoom,
       text: text.trim(),
     });
+    
     setText('');
+    
+    // Сбрасываем таймер и статус при отправке
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    socketRef.current.emit('stopTyping', { roomId: currentRoom, username: user.username });
+    setTypingUsers([]); // На всякий случай очищаем локальный список
   };
+//   const send = () => {
+//     if (!text.trim() || !socketRef.current) return;
+//     socketRef.current.emit('sendMessage', {
+//       roomId: currentRoom,
+//       text: text.trim(),
+//     });
+//     setText('');
+//   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -328,15 +431,26 @@ export default function Home({ theme, setTheme }) {
                 )}
                 <div ref={messagesEndRef} />
               </div>
+              {/* Индикатор "Печатает..." */}
+              {typingUsers.length > 0 && (
+                <div className="px-3 pb-2">
+                  <small className="text-muted fst-italic">
+                    {typingUsers.length === 1 
+                      ? `✍️ ${typingUsers[0]} печатает...` 
+                      : `✍️ Печатают: ${typingUsers.join(', ')}`
+                    }
+                  </small>
+                </div>
+              )}
 
-              <div className="card-footer ">
+              <div className="card-footer">
                 <div className="input-group">
                   <input
                     type="text"
                     className="form-control form-control-lg"
                     placeholder={`Сообщение в #${currentRoom}...`}
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={handleInputChange} // <-- ЗАМЕНИТЕ onChange ЗДЕСЬ
                     onKeyDown={handleKeyDown}
                     disabled={!isConnected}
                   />

@@ -62,6 +62,15 @@ app.prepare().then(async () => {
       }
     });
 
+    socket.on('typing', ({ roomId, username }) => {
+      // Рассылаем всем в комнате, КРОМЕ отправителя
+      socket.to(roomId).emit('userTyping', { username });
+    });
+
+    socket.on('stopTyping', ({ roomId, username }) => {
+      socket.to(roomId).emit('userStopTyping', { username });
+    });
+
     socket.on('leave', (roomId) => {
       if (typeof roomId === 'string') {
         socket.leave(roomId);

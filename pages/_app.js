@@ -1,27 +1,58 @@
 import { useEffect, useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/theme.css';
 import { AuthProvider } from '../lib/auth-context';
 
-export default function App({ Component, pageProps }) {
-    const [theme, setTheme] = useState('dark');
-    
-        useEffect(() => {
-            const saved = localStorage.getItem('chat-theme');
-            if (saved) setTheme(saved);
-        }, []);
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-bs-theme', theme);
-        localStorage.setItem('chat-theme', theme);
-    }, [theme]);
-
-    return (
-        <AuthProvider>
-            <Component {...pageProps} theme={theme} setTheme={setTheme} />
-        </AuthProvider>
-    );
+// Безопасная функция для получения темы при первом рендере
+function getInitialTheme() {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('chat-theme') || 'light';
+  }
+  return 'light';
 }
+
+export default function App({ Component, pageProps }) {
+  // Инициализируем состояние сразу правильным значением
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    // Синхронизируем атрибут при изменении стейта в React
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    localStorage.setItem('chat-theme', theme);
+  }, [theme]);
+
+  return (
+    <AuthProvider>
+      <Component {...pageProps} theme={theme} setTheme={setTheme} />
+    </AuthProvider>
+  );
+}
+
+
+
+
+// import { useEffect, useState } from 'react';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import '../styles/theme.css';
+// import { AuthProvider } from '../lib/auth-context';
+
+// export default function App({ Component, pageProps }) {
+//     const [theme, setTheme] = useState('dark');
+    
+//         useEffect(() => {
+//             const saved = localStorage.getItem('chat-theme');
+//             if (saved) setTheme(saved);
+//         }, []);
+
+//     useEffect(() => {
+//         document.documentElement.setAttribute('data-bs-theme', theme);
+//         localStorage.setItem('chat-theme', theme);
+//     }, [theme]);
+
+//     return (
+//         <AuthProvider>
+//             <Component {...pageProps} theme={theme} setTheme={setTheme} />
+//         </AuthProvider>
+//     );
+// }
 
 
 
