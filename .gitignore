@@ -1,0 +1,34 @@
+# Зависимости
+node_modules/
+.pnp
+.pnp.js
+
+# Сборка Next.js
+.next/
+out/
+build/
+dist/
+
+# Продакшн-сборка
+.next
+
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Переменные окружения (ПАРОЛИ НЕ КОММИТИМ!)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db

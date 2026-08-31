@@ -1,0 +1,17 @@
+body{
+    background-color:bg-body;
+}
+/* Дополнительные стили поверх Bootstrap */
+.card-body {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  /* background-color: #cbd5e1; */
+  border-radius: 3px;
+}
