@@ -1,6 +1,6 @@
-body{
+/* body{
     background-color:bg-body;
-}
+} */
 /* Дополнительные стили поверх Bootstrap */
 .card-body {
   scrollbar-width: thin;
