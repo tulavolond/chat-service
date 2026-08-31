@@ -1,13 +1,13 @@
 /* Переопределяем цвета Bootstrap */
-:root,
+/* :root,
 [data-bs-theme="light"] {
-  --bs-primary: #10b981;          /* зелёный вместо синего */
+  --bs-primary: #10b981;          
   --bs-primary-rgb: 16, 185, 129;
-  --bs-body-bg: #f8fafc;          /* фон страницы */
+  --bs-body-bg: #f8fafc;         
 }
 
 [data-bs-theme="dark"] {
   --bs-primary: #34d399;
   --bs-primary-rgb: 52, 211, 153;
-  --bs-body-bg: #0f172a;          /* тёмный фон */
-}
+  --bs-body-bg: #0f172a;          
+} */
