@@ -52,15 +52,50 @@ app.prepare().then(async () => {
   io.on('connection', (socket) => {
     console.log(`user connected: ${socket.data.user.username} (${socket.id})`);
 
+    // Вход в комнату (оставляем для обратной совместимости)
     socket.on('join', (roomId) => {
       if (typeof roomId === 'string' && roomId.length) {
-        if (socket.data.roomId) {
-          socket.leave(socket.data.roomId);
-        }
         socket.join(roomId);
         socket.data.roomId = roomId;
       }
     });
+
+    // 🔥 НОВОЕ: подписка на ВСЕ комнаты (для счётчиков непрочитанных)
+    socket.on('joinAllRooms', async (roomIds) => {
+      if (Array.isArray(roomIds)) {
+        // Выходим из всех старых комнат
+        const rooms = Array.from(socket.rooms);
+        rooms.forEach((room) => {
+          if (room !== socket.id) { // socket.id — это персональная комната, её не трогаем
+            socket.leave(room);
+          }
+        });
+
+        // Входим во все переданные комнаты
+        roomIds.forEach((roomId) => {
+          socket.join(roomId);
+        });
+
+        console.log(`${socket.data.user.username} subscribed to ${roomIds.length} rooms`);
+      }
+    });
+
+    // Выход из комнаты (больше не нужен, но оставляем)
+    socket.on('leave', (roomId) => {
+      if (typeof roomId === 'string') {
+        socket.leave(roomId);
+      }
+    });
+
+    // socket.on('join', (roomId) => {
+    //   if (typeof roomId === 'string' && roomId.length) {
+    //     if (socket.data.roomId) {
+    //       socket.leave(socket.data.roomId);
+    //     }
+    //     socket.join(roomId);
+    //     socket.data.roomId = roomId;
+    //   }
+    // });
 
     socket.on('typing', ({ roomId, username }) => {
       // Рассылаем всем в комнате, КРОМЕ отправителя
@@ -71,16 +106,16 @@ app.prepare().then(async () => {
       socket.to(roomId).emit('userStopTyping', { username });
     });
 
-    socket.on('leave', (roomId) => {
-      if (typeof roomId === 'string') {
-        socket.leave(roomId);
-        if (socket.data.roomId === roomId) {
-          socket.data.roomId = null;
-        }
-      }
-    });
+    // socket.on('leave', (roomId) => {
+    //   if (typeof roomId === 'string') {
+    //     socket.leave(roomId);
+    //     if (socket.data.roomId === roomId) {
+    //       socket.data.roomId = null;
+    //     }
+    //   }
+    // });
 
-    socket.on('sendMessage', async (payload) => {
+        socket.on('sendMessage', async (payload) => {
       try {
         const { roomId, text } = payload || {};
         if (!roomId || !text) {
@@ -88,7 +123,6 @@ app.prepare().then(async () => {
           return;
         }
 
-        // userId и username берём из JWT, а не из клиента!
         const { id: userId, username } = socket.data.user;
 
         const [result] = await pool.execute(
@@ -105,12 +139,45 @@ app.prepare().then(async () => {
           createdAt: new Date().toISOString(),
         };
 
-        io.to(roomId).emit('message', message);
+        // 🔥 Рассылаем ВСЕМ подключённым клиентам, а не только участникам комнаты
+        io.emit('message', message);
       } catch (err) {
         console.error('sendMessage error:', err);
         socket.emit('error', { message: 'Failed to save message' });
       }
     });
+
+    // socket.on('sendMessage', async (payload) => {
+    //   try {
+    //     const { roomId, text } = payload || {};
+    //     if (!roomId || !text) {
+    //       socket.emit('error', { message: 'Invalid payload' });
+    //       return;
+    //     }
+
+    //     // userId и username берём из JWT, а не из клиента!
+    //     const { id: userId, username } = socket.data.user;
+
+    //     const [result] = await pool.execute(
+    //       'INSERT INTO messages (room_id, user_id, username, text) VALUES (?, ?, ?, ?)',
+    //       [roomId, userId, username, String(text).slice(0, 4000)]
+    //     );
+
+    //     const message = {
+    //       id: result.insertId,
+    //       roomId,
+    //       userId,
+    //       username,
+    //       text: String(text).slice(0, 4000),
+    //       createdAt: new Date().toISOString(),
+    //     };
+
+    //     io.to(roomId).emit('message', message);
+    //   } catch (err) {
+    //     console.error('sendMessage error:', err);
+    //     socket.emit('error', { message: 'Failed to save message' });
+    //   }
+    // });
 
     socket.on('disconnect', () => {
       console.log(`user disconnected: ${socket.data.user.username}`);
