@@ -3,6 +3,11 @@ import { useRouter } from 'next/router';
 import { io } from 'socket.io-client';
 import { useAuth } from '../lib/auth-context';
 
+export const metadata = {
+  title: 'Свободный чат для общения',
+  description: 'Множество комнат для общения приложение на Next.js',
+};
+
 export default function Home({ theme, setTheme }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();

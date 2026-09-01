@@ -18,7 +18,7 @@ app.prepare().then(async () => {
     password: process.env.MYSQL_PASSWORD || '',
     database: process.env.MYSQL_DB || 'chat_db',
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 100,
     charset: 'utf8mb4',
   });
 
