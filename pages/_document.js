@@ -17,7 +17,7 @@ export default function Document() {
               (function() {
                 try {
                   // 1. Пробуем взять тему из localStorage
-                  var theme = localStorage.getItem('chat-theme');
+                  var theme = localStorage.getItem('chat-theme') || 'dark';
                   
                   // 2. Если нет, проверяем системные настройки пользователя
                   if (!theme) {
@@ -25,10 +25,10 @@ export default function Document() {
                   }
                   
                   // 3. Применяем ДО отрисовки body, чтобы не было моргания
-                  document.documentElement.setAttribute('data-bs-theme', theme);
+                  document.documentElement.setAttribute('data-bs-theme', 'dark');
                 } catch (e) {
                   // На случай ошибок доступа к localStorage (например, в приватном режиме)
-                  document.documentElement.setAttribute('data-bs-theme', 'light');
+                  document.documentElement.setAttribute('data-bs-theme', 'dark');
                 }
               })();
             `,

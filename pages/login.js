@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/auth-context';
+import Link from 'next/link';
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
@@ -42,9 +43,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-vh-100 bg-light d-flex align-items-center">
+    <div className="min-vh-100 bg-dark d-flex align-items-center">
       <div className="container">
-        <div className="row justify-content-center">
+        <div className="row justify-content-center bg-dark">
           <div className="col-md-6 col-lg-4">
             <div className="card shadow">
               <div className="card-body p-4">
@@ -104,9 +105,14 @@ export default function Login() {
                   >
                     {loading ? 'Загрузка...' : isRegister ? 'Зарегистрироваться' : 'Войти'}
                   </button>
+
                 </form>
 
                 <div className="text-center mt-3">
+                  <Link href="/forgot-password" className="btn btn-link">
+                    Забыли пароль?
+                  </Link>
+                  <br />
                   <button
                     className="btn btn-link"
                     onClick={() => {

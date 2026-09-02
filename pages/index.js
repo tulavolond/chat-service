@@ -405,14 +405,14 @@ export default function Home({ theme, setTheme }) {
       <nav className="navbar navbar-dark bg-primary shadow-sm">
         <div className="container-fluid">
           <button
-            className="btn btn-link text-white d-lg-none p-0 me-2"
+            className="btn btn-link d-lg-none p-0 me-2"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             ☰
           </button>
           <span className="navbar-brand mb-0 h1">💬 Chat</span>
           <div className="d-flex align-items-center gap-3">
-            <span className="navbar-text text-white">👤 {user.username}</span>
+            <span className="navbar-text">👤 {user.username}</span>
             <span className={`badge ${isConnected ? 'bg-success' : 'bg-danger'}`}>
               {isConnected ? 'Online' : 'Offline'}
             </span>
@@ -424,7 +424,7 @@ export default function Home({ theme, setTheme }) {
                 checked={theme === 'dark'}
                 onChange={(e) => setTheme(e.target.checked ? 'dark' : 'light')}
               />
-              <label className="form-check-label text-white" htmlFor="themeSwitch">
+              <label className="form-check-label" htmlFor="themeSwitch">
                 {theme === 'dark' ? '🌙' : '☀️'}
               </label>
             </div>
@@ -516,7 +516,7 @@ export default function Home({ theme, setTheme }) {
                     >
                       <div
                         className={`d-inline-block px-3 py-2 rounded-3 ${
-                          m.userId === user.id ? 'bg-primary text-white' : 'bg-body border'
+                          m.userId === user.id ? 'bg-primary' : 'bg-body border'
                         }`}
                         style={{ maxWidth: '70%' }}
                       >

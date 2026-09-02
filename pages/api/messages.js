@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   const roomId = String(req.query.roomId || '').trim();
   if (!roomId) return res.status(400).json({ error: 'roomId is required' });
 
-  const limit = Math.min(Number(req.query.limit) || 50, 200);
+  const limit = parseInt(Math.min(Number(req.query.limit) || 50, 200));
   const before = req.query.before ? new Date(req.query.before) : null;
 
   try {

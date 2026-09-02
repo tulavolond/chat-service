@@ -25,3 +25,16 @@ CREATE TABLE IF NOT EXISTS messages (
   INDEX idx_room_created (room_id, created_at),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS room_reads (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id      BIGINT UNSIGNED NOT NULL,
+  room_id      VARCHAR(64) NOT NULL,
+  last_read_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_user_room (user_id, room_id)
+) ENGINE=InnoDB;
+
+ALTER TABLE users 
+ADD COLUMN reset_token VARCHAR(255) DEFAULT NULL,
+ADD COLUMN reset_token_expires DATETIME DEFAULT NULL;
