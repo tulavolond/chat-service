@@ -43,11 +43,7 @@ export default function Login() {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="min-vh-100 bg-dark d-flex align-items-center">
-=======
     <div className="min-vh-100 bg-body d-flex align-items-center">
->>>>>>> e08a0d4a8b92786a704f15aff45d7ad35ffa73e7
       <div className="container">
         <div className="row justify-content-center bg-dark">
           <div className="col-md-6 col-lg-4">

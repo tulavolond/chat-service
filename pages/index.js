@@ -407,6 +407,12 @@ export default function Home({ theme, setTheme }) {
 
   return (
     <div className="min-vh-100 bg-body d-flex flex-column">
+      <Head>
+        {/* Эти настройки будут работать на ВСЕХ страницах по умолчанию */}
+        <title>Чат сообщества</title>
+        <meta name="description" content="Здесь можно обмениваться сообщениями и создавать комнаты" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <nav className="navbar navbar-dark bg-primary shadow-sm">
         <div className="container-fluid">
           <button
