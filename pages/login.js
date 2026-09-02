@@ -45,7 +45,7 @@ export default function Login() {
   return (
     <div className="min-vh-100 bg-body d-flex align-items-center">
       <div className="container">
-        <div className="row justify-content-center bg-dark">
+        <div className="row justify-content-center bg-body">
           <div className="col-md-6 col-lg-4">
             <div className="card shadow">
               <div className="card-body p-4">

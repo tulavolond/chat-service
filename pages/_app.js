@@ -3,9 +3,9 @@ import { AuthProvider } from '../lib/auth-context';
 
 // Безопасная функция для получения темы при первом рендере
 function getInitialTheme() {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('chat-theme') || 'dark';
-  }
+  // if (typeof window !== 'undefined') {
+  //   return localStorage.getItem('chat-theme') || 'dark';
+  // }
   return 'dark';
 }
 
