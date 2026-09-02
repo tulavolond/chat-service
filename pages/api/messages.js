@@ -9,33 +9,45 @@ export default async function handler(req, res) {
   const roomId = String(req.query.roomId || '').trim();
   if (!roomId) return res.status(400).json({ error: 'roomId is required' });
 
+<<<<<<< HEAD
   const limit = parseInt(Math.min(Number(req.query.limit) || 50, 200));
+=======
+  // const limit = Math.min(Number(req.query.limit) || 50, 200);
+>>>>>>> e08a0d4a8b92786a704f15aff45d7ad35ffa73e7
   const before = req.query.before ? new Date(req.query.before) : null;
 
-  try {
+try {
     let rows;
+    
+    // Безопасно форсируем тип данных к валидному Integer
+    const safeLimit = parseInt(Math.min(Number(req.query.limit) || 50, 200), 10);
+
     if (before && !isNaN(before.getTime())) {
-      [rows] = await pool.execute(
+      // Подставляем safeLimit прямо в строку запроса
+      const [result] = await pool.query(
         `SELECT id, room_id AS roomId, user_id AS userId, username, text,
                 created_at AS createdAt
          FROM messages WHERE room_id = ? AND created_at < ?
-         ORDER BY created_at DESC LIMIT ?`,
-        [roomId, before, limit]
+         ORDER BY created_at DESC LIMIT ${safeLimit}`,
+        [roomId, before]
       );
+      rows = result;
     } else {
-      [rows] = await pool.execute(
+      // Подставляем safeLimit прямо в строку запроса
+      const [result] = await pool.query(
         `SELECT id, room_id AS roomId, user_id AS userId, username, text,
                 created_at AS createdAt
          FROM messages WHERE room_id = ?
-         ORDER BY created_at DESC LIMIT ?`,
-        [roomId, limit]
+         ORDER BY created_at DESC LIMIT ${safeLimit}`,
+        [roomId]
       );
+      rows = result;
     }
 
     rows.reverse();
     res.status(200).json({ messages: rows });
   } catch (e) {
-    console.error(e);
+    console.error("Ошибка при запросе сообщений:", e);
     res.status(500).json({ error: 'db error' });
   }
 }
