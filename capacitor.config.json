@@ -1,0 +1,9 @@
+{
+  "appId": "ru.t2020.chat",
+  "appName": "Chat T2020",
+  "webDir": "out",
+  "server": {
+    "url": "https://chat.t2020.ru",
+    "cleartext": true
+  }
+}
